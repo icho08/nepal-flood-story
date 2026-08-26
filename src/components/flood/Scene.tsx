@@ -320,15 +320,28 @@ function Glacier() {
 /* Camera flight                                                       */
 /* ------------------------------------------------------------------ */
 
-const WAYPOINTS: { pos: [number, number, number]; look: [number, number, number] }[] = [
-  { pos: [22, 26, -84], look: [0, 6, -60] },
-  { pos: [-20, 18, -66], look: [0, 4, -48] },
-  { pos: [16, 12, -60], look: [0, 2, -46] },
-  { pos: [-12, 9, -52], look: [0, 0, -34] },
-  { pos: [18, 14, -6], look: [0, -4, 8] },
-  { pos: [-22, 18, 40], look: [0, -9, 56] },
-  { pos: [26, 34, 74], look: [0, -12, 86] },
+/** Camera keyframes expressed in valley coordinates so the lens always
+ *  stays inside the gorge, above the floor and below the ridge line. */
+const WAYPOINTS: { z: number; side: number; up: number; ahead: number }[] = [
+  { z: -80, side: 7, up: 14, ahead: 26 }, // glaciated headwaters
+  { z: -64, side: -8, up: 12, ahead: 22 }, // avalanche falls in
+  { z: -56, side: 9, up: 8, ahead: 14 }, // the blockage
+  { z: -50, side: -6, up: 5, ahead: 12 }, // breach, at water level
+  { z: -8, side: 8, up: 9, ahead: 22 }, // Rasuwagadhi / Timure
+  { z: 34, side: -9, up: 11, ahead: 26 }, // Syabrubesi
+  { z: 70, side: 10, up: 18, ahead: 30 }, // into the Trishuli
 ];
+
+function camPoint(w: { z: number; side: number; up: number; ahead: number }) {
+  return {
+    pos: new THREE.Vector3(channelAt(w.z) + w.side, floorAt(w.z) + w.up, w.z),
+    look: new THREE.Vector3(
+      channelAt(w.z + w.ahead),
+      floorAt(w.z + w.ahead) + 1.5,
+      w.z + w.ahead,
+    ),
+  };
+}
 
 function CameraRig({ progress }: { progress: MutableRefObject<number> }) {
   const { camera } = useThree();
@@ -339,11 +352,12 @@ function CameraRig({ progress }: { progress: MutableRefObject<number> }) {
     const f = p * (WAYPOINTS.length - 1);
     const i = Math.min(Math.floor(f), WAYPOINTS.length - 2);
     const k = THREE.MathUtils.smoothstep(f - i, 0, 1);
-    const a = WAYPOINTS[i]!;
-    const b = WAYPOINTS[i + 1]!;
-    const px = THREE.MathUtils.lerp(a.pos[0], b.pos[0], k);
-    const py = THREE.MathUtils.lerp(a.pos[1], b.pos[1], k);
-    const pz = THREE.MathUtils.lerp(a.pos[2], b.pos[2], k);
+    const a = camPoint(WAYPOINTS[i]!);
+    const b = camPoint(WAYPOINTS[i + 1]!);
+    const px = THREE.MathUtils.lerp(a.pos.x, b.pos.x, k);
+    const py = THREE.MathUtils.lerp(a.pos.y, b.pos.y, k);
+    const pz = THREE.MathUtils.lerp(a.pos.z, b.pos.z, k);
+
     const damp = 1 - Math.pow(0.001, delta);
     camera.position.lerp(new THREE.Vector3(px, py, pz), damp);
     target.current.lerp(
