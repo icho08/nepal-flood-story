@@ -362,12 +362,13 @@ function CameraRig({ progress }: { progress: MutableRefObject<number> }) {
     camera.position.lerp(new THREE.Vector3(px, py, pz), damp);
     target.current.lerp(
       new THREE.Vector3(
-        THREE.MathUtils.lerp(a.look[0], b.look[0], k),
-        THREE.MathUtils.lerp(a.look[1], b.look[1], k),
-        THREE.MathUtils.lerp(a.look[2], b.look[2], k),
+        THREE.MathUtils.lerp(a.look.x, b.look.x, k),
+        THREE.MathUtils.lerp(a.look.y, b.look.y, k),
+        THREE.MathUtils.lerp(a.look.z, b.look.z, k),
       ),
       damp,
     );
+
     camera.lookAt(target.current);
   });
 
