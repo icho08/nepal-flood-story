@@ -39,7 +39,7 @@ function useTerrainGeometry() {
     const hSeg = 220;
     const geo = new THREE.PlaneGeometry(80, Z_END - Z_START, wSeg, hSeg);
     geo.rotateX(-Math.PI / 2);
-    const pos = geo.attributes.position as THREE.BufferAttribute;
+    const pos = geo.attributes['position'] as THREE.BufferAttribute;
     const colors: number[] = [];
     const rock = new THREE.Color("#3a4250");
     const snow = new THREE.Color("#d8e6ef");
@@ -82,7 +82,7 @@ function River({ progress }: { progress: MutableRefObject<number> }) {
     const mesh = ref.current;
     if (!mesh) return;
     const t = clock.elapsedTime;
-    const pos = mesh.geometry.attributes.position as THREE.BufferAttribute;
+    const pos = mesh.geometry.attributes['position'] as THREE.BufferAttribute;
     for (let i = 0; i < pos.count; i++) {
       const z = pos.getZ(i) + (Z_START + Z_END) / 2;
       pos.setX(i, pos.getX(i) - (pos.getX(i) - channelAt(z)) * 0);
@@ -136,7 +136,7 @@ function DebrisDam({ progress }: { progress: MutableRefObject<number> }) {
     const fall = THREE.MathUtils.clamp((p - 0.14) / 0.14, 0, 1);
     const burst = THREE.MathUtils.clamp((p - 0.44) / 0.12, 0, 1);
     g.children.forEach((child, i) => {
-      const b = blocks[i];
+      const b = blocks[i]!;
       child.position.y = floorAt(DAM_Z) + b.y + (1 - fall) * b.drop;
       child.position.z = b.z + burst * (14 + i);
       child.rotation.x = b.r + fall * 3 + burst * 6;
@@ -179,7 +179,7 @@ function Flood({ progress }: { progress: MutableRefObject<number> }) {
     const frontZ = DAM_Z + release * (Z_END - DAM_Z + 20);
     const drain = THREE.MathUtils.clamp((p - 0.62) / 0.3, 0, 1);
 
-    const pos = mesh.geometry.attributes.position as THREE.BufferAttribute;
+    const pos = mesh.geometry.attributes['position'] as THREE.BufferAttribute;
     for (let i = 0; i < pos.count; i++) {
       const z = pos.getZ(i) + (Z_START + Z_END) / 2;
       const base = floorAt(z);
@@ -256,7 +256,7 @@ function Settlement({
     const release = THREE.MathUtils.clamp((p - 0.44) / 0.34, 0, 1);
     const frontZ = DAM_Z + release * (Z_END - DAM_Z + 20);
     g.children.forEach((child, i) => {
-      const it = items[i];
+      const it = items[i]!;
       const hit = THREE.MathUtils.clamp((frontZ - it.z) / 10, 0, 1);
       child.rotation.z = it.tilt * hit;
       child.position.y = floorAt(it.z) + it.h / 2 - hit * it.h * 1.1;
@@ -339,8 +339,8 @@ function CameraRig({ progress }: { progress: MutableRefObject<number> }) {
     const f = p * (WAYPOINTS.length - 1);
     const i = Math.min(Math.floor(f), WAYPOINTS.length - 2);
     const k = THREE.MathUtils.smoothstep(f - i, 0, 1);
-    const a = WAYPOINTS[i];
-    const b = WAYPOINTS[i + 1];
+    const a = WAYPOINTS[i]!;
+    const b = WAYPOINTS[i + 1]!;
     const px = THREE.MathUtils.lerp(a.pos[0], b.pos[0], k);
     const py = THREE.MathUtils.lerp(a.pos[1], b.pos[1], k);
     const pz = THREE.MathUtils.lerp(a.pos[2], b.pos[2], k);
